@@ -93,9 +93,13 @@ async function run() {
         // review related APIs
         app.get('/reviews', async (req, res) => {
             const id = req.query.id
+            const email = req.query.email;
             let query = {}
             if (id) {
                 query = { serviceId: id }
+            }
+            if (email) {
+                query = { userEmail: email }
             }
 
             const result = await reviewsCollection.find(query).toArray();
@@ -106,6 +110,13 @@ async function run() {
             const newReview = req.body;
             const result = await reviewsCollection.insertOne(newReview);
             res.send(result);
+        })
+
+        app.delete('/reviews/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await reviewsCollection.deleteOne(query);
+            res.send(result)
         })
 
         // Connect the client to the server	(optional starting in v4.7)
