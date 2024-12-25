@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 require('dotenv').config();
 
@@ -50,11 +50,33 @@ async function run() {
             res.send(result)
         })
 
-       
 
         app.post('/services', async (req, res) => {
             const newService = req.body;
             const result = await servicesCollection.insertOne(newService);
+            res.send(result)
+        })
+
+        app.put('/services/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedService = req.body;
+
+            const service = {
+                $set: {
+                    price: updatedService.price,
+                }
+            }
+
+            const result = await servicesCollection.updateOne(query, service, options);
+            res.send(result);
+        })
+
+        app.delete('/services/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await servicesCollection.deleteOne(query);
             res.send(result)
         })
 
