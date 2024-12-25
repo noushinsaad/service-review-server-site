@@ -33,6 +33,18 @@ async function run() {
     try {
         const servicesCollection = client.db('servicesPortal').collection('services');
 
+        app.get('/featuredServices', async (req, res) => {
+            const cursor = servicesCollection.find().limit(6);
+            const result = await cursor.toArray();
+            res.send(result)
+        })
+
+        app.get('/services', async (req, res) => {
+            const cursor = servicesCollection.find();
+            const result = await cursor.toArray();
+            res.send(result)
+        })
+
         app.post('/services', async (req, res) => {
             const newService = req.body;
             const result = await servicesCollection.insertOne(newService);
