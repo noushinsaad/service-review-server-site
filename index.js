@@ -32,24 +32,30 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         const servicesCollection = client.db('servicesPortal').collection('services');
+        const reviewsCollection = client.db('servicesPortal').collection('reviews')
 
-        app.get('/featuredServices', async (req, res) => {
-            const cursor = servicesCollection.find().limit(6);
-            const result = await cursor.toArray();
-            res.send(result)
-        })
-
+        // Service related APIs
         app.get('/services', async (req, res) => {
             const email = req.query.email;
+            const featured = req.query.featured;
+
             let query = {}
             if (email) {
                 query = { userEmail: email }
             }
-            const cursor = servicesCollection.find(query);
+            const cursor = featured
+                ? servicesCollection.find(query).limit(6)
+                : servicesCollection.find(query);
             const result = await cursor.toArray();
             res.send(result)
         })
 
+        app.get('/services/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await servicesCollection.findOne(query);
+            res.send(result);
+        })
 
         app.post('/services', async (req, res) => {
             const newService = req.body;
@@ -65,6 +71,10 @@ async function run() {
 
             const service = {
                 $set: {
+                    image: updatedService.image,
+                    companyName: updatedService.companyName,
+                    website: updatedService.website,
+                    description: updatedService.description,
                     price: updatedService.price,
                 }
             }
@@ -78,6 +88,24 @@ async function run() {
             const query = { _id: new ObjectId(id) };
             const result = await servicesCollection.deleteOne(query);
             res.send(result)
+        })
+
+        // review related APIs
+        app.get('/reviews', async (req, res) => {
+            const id = req.query.id
+            let query = {}
+            if (id) {
+                query = { serviceId: id }
+            }
+
+            const result = await reviewsCollection.find(query).toArray();
+            res.send(result);
+        });
+
+        app.post('/reviews', async (req, res) => {
+            const newReview = req.body;
+            const result = await reviewsCollection.insertOne(newReview);
+            res.send(result);
         })
 
         // Connect the client to the server	(optional starting in v4.7)
