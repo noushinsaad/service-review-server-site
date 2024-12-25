@@ -112,6 +112,23 @@ async function run() {
             res.send(result);
         })
 
+        app.put('/reviews/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedReview = req.body;
+
+            const service = {
+                $set: {
+                    text: updatedReview.text,
+                    rating: updatedReview.rating
+                }
+            }
+
+            const result = await reviewsCollection.updateOne(query, service, options);
+            res.send(result);
+        })
+
         app.delete('/reviews/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
