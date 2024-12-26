@@ -187,7 +187,14 @@ async function run() {
         app.post('/reviews', async (req, res) => {
             const newReview = req.body;
             const result = await reviewsCollection.insertOne(newReview);
-            res.send(result);
+
+            const { serviceId } = newReview;
+            const filter = { _id: new ObjectId(serviceId) }
+            const updatedResult = await servicesCollection.updateOne(filter, { $inc: { reviewCount: 1 } });
+
+            const updatedService = await servicesCollection.findOne(filter);
+
+            res.send({ insertedId: result.insertedId, updatedService });
         })
 
         app.put('/reviews/:id', async (req, res) => {
@@ -210,7 +217,14 @@ async function run() {
         app.delete('/reviews/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
+            const review = await reviewsCollection.findOne(query);
+
             const result = await reviewsCollection.deleteOne(query);
+
+            const { serviceId } = review
+            const serviceQuery = { _id: new ObjectId(serviceId) }
+            const updatedResult = await servicesCollection.updateOne(serviceQuery, { $inc: { reviewCount: -1 } });
+
             res.send(result)
         })
 
