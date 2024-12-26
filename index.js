@@ -51,7 +51,28 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         const servicesCollection = client.db('servicesPortal').collection('services');
-        const reviewsCollection = client.db('servicesPortal').collection('reviews')
+        const reviewsCollection = client.db('servicesPortal').collection('reviews');
+        const usersCollection = client.db('servicesPortal').collection('users')
+
+        // users related APIs
+        app.get('/users', async (req, res) => {
+            const result = await usersCollection.find().toArray();
+            res.send(result)
+        })
+
+        app.post('/users', async (req, res) => {
+            const { email, name, createdAt } = req.body;
+            const existingUser = await usersCollection.findOne({ email });
+
+            if (existingUser) {
+                return res.status(200).send({ message: "User already exists" });
+            }
+
+            const newUser = { email, name, createdAt };
+
+            const result = await usersCollection.insertOne(newUser);
+            res.send(result)
+        })
 
         // auth related APIs
         app.post('/jwt', (req, res) => {
@@ -143,15 +164,20 @@ async function run() {
         })
 
         // review related APIs
-        app.get('/reviews', async (req, res) => {
+        app.get('/reviews', verifyToken, async (req, res) => {
             const id = req.query.id
             const email = req.query.email;
             let query = {}
             if (id) {
                 query = { serviceId: id }
             }
+
             if (email) {
                 query = { userEmail: email }
+
+                if (!req.user || req.user.email !== email) {
+                    return res.status(403).send({ message: "Forbidden Access" });
+                }
             }
 
             const result = await reviewsCollection.find(query).toArray();
@@ -186,6 +212,15 @@ async function run() {
             const query = { _id: new ObjectId(id) };
             const result = await reviewsCollection.deleteOne(query);
             res.send(result)
+        })
+
+        // counting users,services and reviews related APIs
+        app.get('/counts', async (req, res) => {
+            const userCount = await usersCollection.estimatedDocumentCount();
+            const reviewsCount = await reviewsCollection.estimatedDocumentCount();
+            const servicesCount = await servicesCollection.estimatedDocumentCount();
+
+            res.send({ userCount, reviewsCount, servicesCount });
         })
 
         // Connect the client to the server	(optional starting in v4.7)
