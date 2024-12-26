@@ -16,21 +16,23 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-const verifyToken = (req, res, next) => {
+function verifyToken(req, res, next) {
     const token = req?.cookies?.token;
-
     if (!token) {
-        return res.status(401).send({ message: "Unauthorized Access" })
+        req.user = null;
+        return next();
     }
 
     jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
         if (err) {
-            return res.status(401).send({ message: "Unauthorized Access" })
+            req.user = null;
+        } else {
+            req.user = decoded;
         }
-        req.user = decoded
-        next()
-    })
+        next();
+    });
 }
+
 
 
 
@@ -86,15 +88,15 @@ async function run() {
             let query = {}
             if (email) {
                 query = { userEmail: email }
+
+                if (!req.user || req.user.email !== email) {
+                    return res.status(403).send({ message: "Forbidden Access" });
+                }
             }
             const cursor = featured
                 ? servicesCollection.find(query).limit(6)
                 : servicesCollection.find(query);
 
-
-            if (req.user.email !== email) {
-                return res.status(403).send({ message: "Forbidden Access" })
-            }
 
             const result = await cursor.toArray();
             res.send(result)
