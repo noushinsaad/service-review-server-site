@@ -130,6 +130,22 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/services/search', async (req, res) => {
+            const { query } = req.query.query;
+
+            if (!query) {
+                return res.status(400).send({ message: "Search query is required" });
+            }
+
+            const searchRegex = new RegExp(query, "i");
+
+
+            const result = await servicesCollection.find({ title: searchRegex }).toArray();
+
+            res.send(results);
+
+        });
+
         app.post('/services', async (req, res) => {
             const newService = req.body;
             const result = await servicesCollection.insertOne(newService);
