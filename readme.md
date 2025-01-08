@@ -29,4 +29,4 @@ This is a backend service built using Node.js and Express.js, with MongoDB as th
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/service-portal-api.git
+   git clone https://github.com/noushinsaad/service-review-server-site.git
