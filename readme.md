@@ -30,3 +30,23 @@ This is a backend service built using Node.js and Express.js, with MongoDB as th
 1. Clone the repository:
    ```bash
    git clone https://github.com/noushinsaad/service-review-server-site.git
+
+2. Install dependencies:
+   ```bash
+   npm install
+
+### Configuration
+1. Create a .env file in the root directory and add the following environment variables:
+    ```env
+    PORT=5000
+    DB_USER=your_db_user
+    DB_PASS=your_db_password
+    ACCESS_TOKEN=your_jwt_secret
+    NODE_ENV=development
+
+### Running the Application
+1. Start the server:
+    ```bash
+    npm start
+
+2. The server will be running on http://localhost:5000.
