@@ -47,6 +47,6 @@ This is a backend service built using Node.js and Express.js, with MongoDB as th
 ### Running the Application
 1. Start the server:
     ```bash
-    npm start
+    nodemon index.js
 
 2. The server will be running on http://localhost:5000.
